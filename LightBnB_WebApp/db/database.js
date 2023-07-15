@@ -121,7 +121,7 @@ const getAllReservations = (guest_id, limit = 10) => {
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
-const getAllProperties = function (options, limit = 10) {
+const getAllProperties = function(options, limit = 10) {
   // 1
   const queryParams = [];
   // 2
@@ -136,20 +136,20 @@ const getAllProperties = function (options, limit = 10) {
   if (options.owner_id) {
     queryParams.push(options.owner_id);
     queryString += ` AND owner_id = $${queryParams.length}`;
-        
+
   }
 
   if (options.minimum_price_per_night && options.maximum_price_per_night) {
     queryParams.push(`${options.minimum_price_per_night * 100}`);
     queryParams.push(`${options.maximum_price_per_night * 100}`);
-    queryString += ` AND cost_per_night >= $${queryParams.length-1} AND  cost_per_night <= $${queryParams.length}`;
-    
+    queryString += ` AND cost_per_night >= $${queryParams.length - 1} AND  cost_per_night <= $${queryParams.length}`;
+
   }
 
   if (options.minimum_rating) {
     queryParams.push(`${minimum_rating}`);
     queryString += ` AND minimum_rating >= $${queryParams.length}`;
-   
+
   }
 
   // 4
@@ -196,20 +196,13 @@ const addProperty = function(property) {
 
   const values = [owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms];
 
-return pool
+  return pool
     .query(query, values)
     .then((res) => res.rows[0])
     .catch((err) => {
       console.log(err.message);
     });
 };
-
-
-
-  // Object.keys(properties).length + 1;
-  // property.id = propertyId;
-  // properties[propertyId] = property;
-  // return Promise.resolve(property);
 
 
 module.exports = {
