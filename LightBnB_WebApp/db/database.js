@@ -94,15 +94,15 @@ const addUser = (user) => {
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = (guest_id, limit = 10) => {
-  const query = `SELECT reservations.*, avg(rating) as average_rating
+  const query = `SELECT reservations.id, properties.*, reservations.start_date, avg(rating) as average_rating
   FROM reservations
   JOIN properties ON reservations.property_id = properties.id
   JOIN property_reviews ON properties.id = property_reviews.property_id
   WHERE reservations.guest_id = $1
   GROUP BY properties.id, reservations.id
   ORDER BY reservations.start_date
-  LIMIT 10;`;
-  const values = [guest_id];
+  LIMIT $2;`;
+  const values = [guest_id, limit];
 
   return pool
     .query(query, values)
@@ -133,6 +133,13 @@ const getAllProperties = function(options, limit = 10) {
   `;
 
   // 3
+
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    queryString += `AND city LIKE $${queryParams.length}`;
+  }
+
+
   if (options.owner_id) {
     queryParams.push(options.owner_id);
     queryString += ` AND owner_id = $${queryParams.length}`;
@@ -147,8 +154,8 @@ const getAllProperties = function(options, limit = 10) {
   }
 
   if (options.minimum_rating) {
-    queryParams.push(`${minimum_rating}`);
-    queryString += ` AND minimum_rating >= $${queryParams.length}`;
+    queryParams.push(`${options.minimum_rating}`);
+    queryString += ` AND rating >= $${queryParams.length}`;
 
   }
 
@@ -194,7 +201,7 @@ const addProperty = function(property) {
   const query = `INSERT INTO properties (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms)
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;`;
 
-  const values = [owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms];
+  const values = [owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night * 100, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms];
 
   return pool
     .query(query, values)
